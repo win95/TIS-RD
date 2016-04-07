@@ -1,0 +1,60 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: µVision V5.14.0.0
+Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: tran duc, tran duc, LIC=WC9MM-XVJ1T-QR9X2-9G755-2LW2P-WACZL
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Basic (256K)  Version: 5.14.0.0
+Toolchain Path:  D:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.05 update 1 (build 106)
+Assembler:       Armasm.exe V5.05 update 1 (build 106)
+Linker/Locator:  ArmLink.exe V5.05 update 1 (build 106)
+Library Manager: ArmAr.exe V5.05 update 1 (build 106)
+Hex Converter:   FromElf.exe V5.05 update 1 (build 106)
+CPU DLL:         SARMCM3.DLL V5.14.0.0
+Dialog DLL:      DCM.DLL V1.13.1.0
+Target DLL:      UL2CM3.DLL V1.155.0.0
+Dialog DLL:      TCM.DLL V1.14.4.0
+ 
+<h2>Project:</h2>
+E:\Duc-TisRD\ZCU\MDK-ARM\Freertos-ZCU.uvproj
+Project File Date:  03/08/2016
+
+<h2>Output:</h2>
+Build target 'stm32f4_blink_freertos'
+compiling main.c...
+..\main.c(1106): warning:  #223-D: function "turn_off_dk3" declared implicitly
+                turn_off_dk3();
+..\main.c(1107): warning:  #223-D: function "turn_off_dk4" declared implicitly
+                turn_off_dk4();
+..\main.c(1127): warning:  #177-D: variable "cnt" was declared but never referenced
+        static uint8_t cnt=0;
+..\main.c(1130): warning:  #177-D: variable "cnt" was declared but never referenced
+        static uint8_t cnt=0;
+..\main.c(1133): warning:  #177-D: variable "cnt" was declared but never referenced
+        static uint8_t cnt=0;
+..\main.c(1324): warning:  #177-D: variable "countTimeOut1" was declared but never referenced
+                static uint32_t countTimeOut1 = 0;
+..\main.c(1336): warning:  #177-D: variable "countTimeOut2" was declared but never referenced
+                static uint32_t countTimeOut2 = 0;
+..\main.c(1349): warning:  #177-D: variable "countTimeOut1" was declared but never referenced
+                static uint32_t countTimeOut1 = 0;
+..\main.c(1361): warning:  #177-D: variable "countTimeOut2" was declared but never referenced
+                static uint32_t countTimeOut2 = 0;
+..\main.c: 9 warnings, 0 errors
+compiling system_stm32f4xx.c...
+linking...
+.\bin\Fansipan.hex: Warning: L6304W: Duplicate input file .\bin\system_stm32f4xx_1.o ignored.
+.\bin\Fansipan.hex: Error: L6218E: Undefined symbol printf_d (referred from main.o).
+.\bin\Fansipan.hex: Error: L6218E: Undefined symbol turn_off_dk3 (referred from main.o).
+.\bin\Fansipan.hex: Error: L6218E: Undefined symbol turn_off_dk4 (referred from main.o).
+Finished: 0 information, 1 warning and 3 error messages.
+".\bin\Fansipan.hex" - 3 Error(s), 10 Warning(s).
+Target not created.
+</pre>
+</body>
+</html>
