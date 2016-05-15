@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <configuration>
+    <name>Debug</name>
+    <toolchain>
+      <name>STM8</name>
+    </toolchain>
+    <debug>1</debug>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <toolchain>
+      <name>STM8</name>
+    </toolchain>
+    <debug>0</debug>
+  </configuration>
+  <group>
+    <name>Lib</name>
+    <file>
+      <name>$PROJ_DIR$\..\lib\src\stm8s_gpio.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\lib\src\stm8s_iwdg.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\lib\src\stm8s_tim1.c</name>
+    </file>
+  </group>
+  <group>
+    <name>User</name>
+    <file>
+      <name>$PROJ_DIR$\..\user\main.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\user\stm8s_conf.h</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\user\stm8s_it.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\user\stm8s_it.h</name>
+    </file>
+  </group>
+</project>
+
+

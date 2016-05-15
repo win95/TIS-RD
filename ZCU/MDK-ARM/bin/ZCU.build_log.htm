@@ -3,36 +3,117 @@
 <pre>
 <h1>µVision Build Log</h1>
 <h2>Tool Versions:</h2>
-IDE-Version: µVision V5.14.0.0
-Copyright (C) 2015 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: tran duc, tran duc, LIC=WC9MM-XVJ1T-QR9X2-9G755-2LW2P-WACZL
+IDE-Version: µVision V5.18a
+Copyright (C) 2016 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: duc tran, tis, LIC=8QQDY-I05WN-QSJY2-979UY-UXXR2-QUULY
  
 Tool Versions:
-Toolchain:       MDK-ARM Basic (256K)  Version: 5.14.0.0
-Toolchain Path:  D:\Keil_v5\ARM\ARMCC\Bin
-C Compiler:      Armcc.exe V5.05 update 1 (build 106)
-Assembler:       Armasm.exe V5.05 update 1 (build 106)
-Linker/Locator:  ArmLink.exe V5.05 update 1 (build 106)
-Library Manager: ArmAr.exe V5.05 update 1 (build 106)
-Hex Converter:   FromElf.exe V5.05 update 1 (build 106)
-CPU DLL:         SARMCM3.DLL V5.14.0.0
-Dialog DLL:      DCM.DLL V1.13.1.0
-Target DLL:      UL2CM3.DLL V1.155.0.0
-Dialog DLL:      TCM.DLL V1.14.4.0
+Toolchain:       MDK-ARM Basic (256K)  Version: 5.18a
+Toolchain Path:  E:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 1 (build 61)
+Assembler:       Armasm.exe V5.06 update 1 (build 61)
+Linker/Locator:  ArmLink.exe V5.06 update 1 (build 61)
+Library Manager: ArmAr.exe V5.06 update 1 (build 61)
+Hex Converter:   FromElf.exe V5.06 update 1 (build 61)
+CPU DLL:         SARMCM3.DLL V5.18a
+Dialog DLL:      DCM.DLL V1.13.6.0
+Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V2.0.18.0
+Dialog DLL:      TCM.DLL V1.14.8.0
  
 <h2>Project:</h2>
-E:\TIS-RD\ZCU\MDK-ARM\Freertos-ZCU.uvproj
-Project File Date:  04/07/2016
+F:\TIS-RD\ZCU\MDK-ARM\Freertos-ZCU.uvproj
+Project File Date:  04/20/2016
 
 <h2>Output:</h2>
+*** Using Compiler 'V5.05 update 1 (build 106)', folder: 'E:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'stm32f4_blink_freertos'
+compiling stm32f4xx_it.c...
 compiling system_stm32f4xx.c...
+compiling main.c...
+..\main.c(37): warning:  #1295-D: Deprecated declaration push_led - give arg types
+  static void push_led();
+..\main.c(38): warning:  #1295-D: Deprecated declaration push_ccu - give arg types
+  static void push_ccu();
+..\main.c(140): warning:  #1295-D: Deprecated declaration show_detex - give arg types
+  void 	show_detex();
+..\main.c(274): warning:  #177-D: variable "ipadress1" was declared but never referenced
+  int 					ipadress1[4]			=	{192,168,1,188};
+..\main.c(275): warning:  #177-D: variable "getwayadress1" was declared but never referenced
+  int 					getwayadress1[4]	=	{192,168,1,1};
+..\main.c(276): warning:  #177-D: variable "serveradress1" was declared but never referenced
+  int						serveradress1[4]	=	{192,168,1,250};
+..\main.c(277): warning:  #177-D: variable "portadress1" was declared but never referenced
+  int						portadress1 			= 8866;	
+..\main.c(278): warning:  #177-D: variable "timeout1" was declared but never referenced
+  int						timeout1					=1;
+..\main.c(279): warning:  #177-D: variable "wg1" was declared but never referenced
+  int						wg1=0;
+..\main.c(280): warning:  #177-D: variable "wg2" was declared but never referenced
+  int						wg2=0;
+..\main.c(697): warning:  #177-D: variable "kk" was declared but never referenced
+  	int kk=0;
+..\main.c(728): warning:  #177-D: variable "ik" was declared but never referenced
+  		int ik=0;
+..\main.c(797): warning:  #177-D: variable "cnt" was declared but never referenced
+  	static uint8_t cnt=0;
+..\main.c(800): warning:  #177-D: variable "data_rmc" was declared but never referenced
+  	static unsigned char data_rmc = 0;		
+..\main.c(801): warning:  #177-D: variable "rx_buffer" was declared but never referenced
+  	static unsigned char rx_buffer[15] = "";
+..\main.c(802): warning:  #177-D: variable "FLAG" was declared but never referenced
+  	static unsigned char FLAG = 0;
+..\main.c(1270): warning:  #177-D: variable "flagOne" was declared but never referenced
+  	static uint8_t flagOne = 0; // co trang thai lan dau de bo qua qua' trinh lan dau tien cap nhat gia tri so lan hoi khong phan hoi
+..\main.c(1271): warning:  #550-D: variable "nCount" was set but never used
+  	static uint32_t nCount = 0;
+..\main.c(1381): warning:  #1-D: last line of file ends without a newline
+  }
+..\main.c(778): warning:  #177-D: function "push_led" was declared but never referenced
+  static void 	push_led(char *str){
+..\main.c(782): warning:  #177-D: function "push_ccu" was declared but never referenced
+  static void 	push_ccu(char *str){
+..\main.c(1104): warning:  #177-D: function "Sttup" was declared but never referenced
+  static void 	Sttup(char * buffer){ 		
+..\main.c(1112): warning:  #177-D: function "Timeup" was declared but never referenced
+  static void 	Timeup(char * buffer){
+..\main.c: 23 warnings, 0 errors
+compiling stm32f4xx_exti.c...
+compiling stm32f4xx_gpio.c...
+compiling stm32f4xx_rcc.c...
+compiling stm32f4xx_syscfg.c...
+compiling misc.c...
+compiling stm32f4xx_dma.c...
+compiling stm32f4xx_usart.c...
+compiling stm32f4xx_sdio.c...
+compiling stm32f4xx_pwr.c...
+compiling discoveryf4utils.c...
+compiling stm32f4xx_rtc.c...
+compiling heap_2.c...
+compiling tasks.c...
+compiling queue.c...
+compiling croutine.c...
+compiling timers.c...
+compiling list.c...
+assembling startup_stm32f4xx.s...
+compiling system_stm32f4xx.c...
+compiling port.c...
+compiling tm_stm32f4_hd44780.c...
+compiling tm_stm32f4_gpio.c...
+compiling tm_stm32f4_rcc.c...
+compiling tm_stm32f4_usart.c...
+compiling tm_stm32f4_delay.c...
+compiling tm_stm32f4_watchdog.c...
+compiling tm_stm32f4_exti.c...
+compiling tm_stm32f4_bkpsram.c...
+compiling tm_stm32f4_id.c...
+compiling tm_stm32f4_rtc.c...
 linking...
 .\bin\ZCU.hex: Warning: L6304W: Duplicate input file .\bin\system_stm32f4xx_1.o ignored.
-Program Size: Code=79500 RO-data=8256 RW-data=1704 ZI-data=116920  
+Program Size: Code=24488 RO-data=540 RW-data=408 ZI-data=78688  
 Finished: 0 information, 1 warning and 0 error messages.
 FromELF: creating hex file...
-".\bin\ZCU.hex" - 0 Error(s), 1 Warning(s).
+".\bin\ZCU.hex" - 0 Error(s), 24 Warning(s).
+Build Time Elapsed:  00:00:18
 </pre>
 </body>
 </html>

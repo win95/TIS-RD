@@ -29,7 +29,7 @@
 #define TM_DEFINES_H
 
 //#define configUSE_TIMERS  1
-//#define TM_USART1_USE_CUSTOM_IRQ
+#define TM_USART1_USE_CUSTOM_IRQ
 #define TM_USART3_USE_CUSTOM_IRQ
 #define TM_USART6_USE_CUSTOM_IRQ
 /* Put your global defines for all libraries here used in your project */
@@ -43,9 +43,9 @@
 ///* MAC ADDRESS: MAC_ADDR0:MAC_ADDR1:MAC_ADDR2:MAC_ADDR3:MAC_ADDR4:MAC_ADDR5 */
 ///* In case you want to use custom MAC, use parameter in init function */
 
-#define ETHERNET_PHY 0
+//#define ETHERNET_PHY 0
 
-#define LINK_TIMER_INTERVAL 1000
+//#define LINK_TIMER_INTERVAL 1000
 
 //#define ETHERNET_HOSTNAME_DHCP     "F4Discovery"
 /* Replace x with SPI number, 1 - 6 */

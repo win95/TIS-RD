@@ -3,7 +3,7 @@
 #include "stm32f4xx_conf.h"
 #include "discoveryf4utils.h"
 //******************************************************************************
-/* USER ...*/
+/* USER test...*/
 #include "defines.h"
 #include "tm_stm32f4_hd44780.h"
 #include "tm_stm32f4_gpio.h"
@@ -11,14 +11,11 @@
 #include "tm_stm32f4_watchdog.h"
 #include "attributes.h"
 #include "tm_stm32f4_delay.h"
-#include "tm_stm32f4_ethernet.h"
 #include "tm_stm32f4_exti.h"
-#include "tm_stm32f4_fatfs.h"
 #include "tm_stm32f4_rtc.h"
 #include "stm32f4xx_rcc.h"
 #include "tm_stm32f4_id.h"
 #include "tm_stm32f4_bkpsram.h"
-#include "tcp_echoclient.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -31,7 +28,6 @@
 #include "timers.h"
 #include "croutine.h"
 //******************************************************************************
-
 void vConfigure(void *pvParameters);
 void vLedBlinkRed(void *pvParameters);
 void vEthernet(void *pvParameters);
@@ -40,15 +36,29 @@ static void debug_test(char *str);
 static void push_detex(char *str);
 static void push_led();
 static void push_ccu();
-/* Fatfs object */
-FATFS FatFs;
-/* File object */
-FIL fil;
-FRESULT fres;
-DSTATUS disk_initialize (BYTE drv);
-char ZCU[8];
+extern char data_Detect[17];
+void StackDETECT(void);
+unsigned char flag_detect;
+uint16_t addDevice=4; // dia chi cua mach
+#define TIME_WHAT_LOOP_DET 5//ms
+#define DETinZCU    64 
 
-//extern uint8_t tcp_active_connections;
+void sendDataWhatLopDET(char addressDET);
+void saveInfoDetect(char dataDetect[17],char addressDET,char value);
+char getInfoDetect(char dataDetect[17],char addressDET);
+void WhatLoopDetect(void);
+void reset_Data_Detect(void);
+char ZCU[8];
+uint32_t nCountTimeOutRe = 0; // dung de rut ngan thoi gian phai cho` de gui lenh sang 1 detect khac (TIM2_IRQHandler)
+// Qua trinh hoat dong cua ZCU chia lam 2 giai doan chinh
+// neu bang 0 thi chua bat dau 1 quy trinh nao ca
+// 1 : Cap nhat du lieu tu DETECT
+// 2 : tinh toan dua tren du lieu cap nhat va hien thi ra LCD
+uint8_t flagState3Round = 1; 
+char data_Detect[17]; // bien luu tru trang thai cua detect
+char FlagComple;
+void StackLCD(void);
+
 /*Khoi LCD*/
 	uint8_t customChar[] = {
 		0x00,	/*  xxx 11111 */
@@ -113,114 +123,6 @@ static void 	recv_485(int i);
 void 					read_sw_add(void);		//doc gia tri switch 8 bit luu bien
 unsigned char value_dip =0; /* value DIP switch*/
 unsigned char timeout=0;
-/*Khoi Ethernet*/
-char 					data_tcp[128];		//thanh ghi luu du lieu de truyen di
-uint16_t 			requests_count = 1;
-uint8_t 			car_read=0;				//So lan gui di khong nhan lon hon 3 autoreset IC
-uint8_t 				macaddress[64][6]	=	{ // Co dinh
-															{0x00,0xE0,0x69,0xF0,0x00,0x01}, 	//1
-															{0x00,0xE0,0x69,0xF0,0x00,0x02},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x03},
-															{0x00,0xE0,0x69,0xF0,0x00,0x04},
-															{0x00,0xE0,0x69,0xF0,0x00,0x05},	//5
-															{0x00,0xE0,0x69,0xF0,0x00,0x06},
-															{0x00,0xE0,0x69,0xF0,0x00,0x07},
-															{0x00,0xE0,0x69,0xF0,0x00,0x08},
-															{0x00,0xE0,0x69,0xF0,0x00,0x09},
-															{0x00,0xE0,0x69,0xF0,0x00,0x0A},	//10
-															{0x00,0xE0,0x69,0xF0,0x00,0x0B},
-															{0x00,0xE0,0x69,0xF0,0x00,0x0C},
-															{0x00,0xE0,0x69,0xF0,0x00,0x0D},
-															{0x00,0xE0,0x69,0xF0,0x00,0x0E},
-															{0x00,0xE0,0x69,0xF0,0x00,0x0F},	//15
-															{0x00,0xE0,0x69,0xF0,0x00,0x10},
-															{0x00,0xE0,0x69,0xF0,0x00,0x11},
-															{0x00,0xE0,0x69,0xF0,0x00,0x12},
-															{0x00,0xE0,0x69,0xF0,0x00,0x13},
-															{0x00,0xE0,0x69,0xF0,0x00,0x14},	//20
-															{0x00,0xE0,0x69,0xF0,0x00,0x15},
-															{0x00,0xE0,0x69,0xF0,0x00,0x16},
-															{0x00,0xE0,0x69,0xF0,0x00,0x17},
-															{0x00,0xE0,0x69,0xF0,0x00,0x18},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x19}, 	//25
-															{0x00,0xE0,0x69,0xF0,0x00,0x1A},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x1B},
-															{0x00,0xE0,0x69,0xF0,0x00,0x1C},
-															{0x00,0xE0,0x69,0xF0,0x00,0x1D},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x1E},	//30
-															{0x00,0xE0,0x69,0xF0,0x00,0x1F},
-															{0x00,0xE0,0x69,0xF0,0x00,0x20},
-															{0x00,0xE0,0x69,0xF0,0x00,0x21},
-															{0x00,0xE0,0x69,0xF0,0x00,0x22},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x23},	//35
-															{0x00,0xE0,0x69,0xF0,0x00,0x24},
-															{0x00,0xE0,0x69,0xF0,0x00,0x25},
-															{0x00,0xE0,0x69,0xF0,0x00,0x26},
-															{0x00,0xE0,0x69,0xF0,0x00,0x27},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x28},	//40
-															{0x00,0xE0,0x69,0xF0,0x00,0x29},
-															{0x00,0xE0,0x69,0xF0,0x00,0x2A},
-															{0x00,0xE0,0x69,0xF0,0x00,0x2B},
-															{0x00,0xE0,0x69,0xF0,0x00,0x2C},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x2D},	//45
-															{0x00,0xE0,0x69,0xF0,0x00,0x2E},
-															{0x00,0xE0,0x69,0xF0,0x00,0x2F},
-															{0x00,0xE0,0x69,0xF0,0x00,0x30},
-															{0x00,0xE0,0x69,0xF0,0x00,0x31},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x32},	//50
-															{0x00,0xE0,0x69,0xF0,0x00,0x33},
-															{0x00,0xE0,0x69,0xF0,0x00,0x34},
-															{0x00,0xE0,0x69,0xF0,0x00,0x35},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x36},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x37},	//55
-															{0x00,0xE0,0x69,0xF0,0x00,0x38},
-															{0x00,0xE0,0x69,0xF0,0x00,0x39},
-															{0x00,0xE0,0x69,0xF0,0x00,0x3A},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x3B},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x3C},	//60
-															{0x00,0xE0,0x69,0xF0,0x00,0x3D},
-															{0x00,0xE0,0x69,0xF0,0x00,0x3E},
-															{0x00,0xE0,0x69,0xF0,0x00,0x3F},	
-															{0x00,0xE0,0x69,0xF0,0x00,0x40},	//64											
-															};
-uint8_t 				ipadress[4]			=	{10,24,12,101};	// khi chua cau hinh 
-uint8_t 				getwayadress[4]	=	{10,24,12,1};		// khi chua cau hinh
-uint8_t 				netmaskadress[4]=	{255,255,255,0};	// khi chua cau hinh
-uint8_t					serveradress[4]	=	{10,24,12,11};	// khi chua cau hinh
-uint16_t				portadress 			= 8866;							// khi chua cau hinh
-TM_TCPCLIENT_t *tcpclient;
-char  			Sensortex[30][7]={	
-{0xB9,0x5F,0xB1,0xB9,0x7D,0x7F,0xF5},
-{0xB9,0xBE,0xAD,0xB9,0x7C,0x7F,0xD5},
-{0xB9,0xAF,0xA9,0xB9,0x7B,0x7F,0xEA},
-{0xB9,0xBD,0xA5,0xB9,0x7A,0x7F,0xD4},
-{0xB9,0x5E,0xA1,0xB9,0x79,0x7F,0xFA},
-{0xB9,0xBC,0x9D,0xB9,0x78,0x7F,0xD3},
-{0xB9,0xD7,0x99,0xB9,0x77,0x7F,0xE9},
-{0xB9,0xBB,0x95,0xB9,0x76,0x7F,0xD2},
-{0xB9,0x5D,0x91,0xB9,0x75,0x7F,0xF4},
-{0xB9,0xBA,0x8D,0xB9,0x74,0x7F,0xD1},
-{0xB9,0xAE,0x89,0xB9,0x73,0x7F,0xE8},
-{0xB9,0xB9,0x85,0xB9,0x72,0x7F,0xD0},
-{0xB9,0x5C,0x81,0xB9,0x71,0x7F,0xFE},
-{0xB9,0xB8,0x7D,0xB9,0x70,0x7F,0xCF},
-{0xB9,0xEB,0x79,0xB9,0x6F,0x7F,0xE7},
-{0xB9,0xB7,0x75,0xB9,0x6E,0x7F,0xCE},
-{0xB9,0x5B,0x71,0xB9,0x6D,0x7F,0xF3},
-{0xB9,0xB6,0x6D,0xB9,0x6C,0x7F,0xCD},
-{0xB9,0xAD,0x69,0xB9,0x6B,0x7F,0xE6},
-{0xB9,0xB5,0x65,0xB9,0x6A,0x7F,0xCC},
-{0xB9,0x5A,0x61,0xB9,0x69,0x7F,0xF9},
-{0xB9,0xB4,0x5D,0xB9,0x68,0x7F,0xCB},
-{0xB9,0xD6,0x59,0xB9,0x67,0x7F,0xE5},
-{0xB9,0xB3,0x55,0xB9,0x66,0x7F,0xCA},
-{0xB9,0x59,0x51,0xB9,0x65,0x7F,0xF2},
-{0xB9,0xB2,0x4D,0xB9,0x64,0x7F,0xC9},
-{0xB9,0xAC,0x49,0xB9,0x63,0x7F,0xE4},
-{0xB9,0xB1,0x45,0xB9,0x62,0x7F,0xC8},
-{0xB9,0x58,0x41,0xB9,0x7F,0x7F,0xEB},
-{0xB9,0xBF,0xB5,0xB9,0x7E,0x7F,0xD6},
-};
 /*Khoi process*/
 unsigned char  	Process_1				=0;		// xu li day len PC nhung.
 unsigned char  	Process_2				=0;		// xu li day len server.
@@ -246,19 +148,9 @@ void vTimerCallback3( xTimerHandle  pxTimer ); 	// 34bit Weigang
 void vTimerCallback4( xTimerHandle  pxTimer );	// 34bit Weigang
 void vTimerCallback5( xTimerHandle  pxTimer ); 	// 26bit Weigang
 void vTimerCallback6( xTimerHandle  pxTimer );	// 26bit Weigang
-/*Khoi Wiegand*/ 
-uint8_t 				flag_finish_1 = 1;
-uint8_t 				flag_finish_2 = 1;
-__IO uint64_t 	card_1 = 0;
-__IO uint8_t  	count_1 = 0;
-__IO uint64_t 	card_2 = 0;
-__IO uint8_t  	count_2 = 0;
-uint8_t 				crc_26bit(uint32_t allnum_bit,uint32_t wiegand);
-uint8_t 				crc_34bit(uint32_t allnum_bit,uint64_t wiegand);
 
 #define STACK_SIZE_MIN	128	/* usStackDepth	- the stack size DEFINED IN WORDS.*/
 const signed char timer_xx[] = "Timer";
-uint8_t mac_address[6];
 uint8_t i;
 			/* Free and total space */
 
@@ -272,7 +164,7 @@ int main(void)
                                           vTimerCallback1     // Each timer calls the same callback when it expires.
                                       );		
           xTimers[2] = xTimerCreate(timer_xx,         // Just a text name, not used by the kernel.
-                                          (150/ portTICK_RATE_MS),     // The timer period in ticks.
+                                          (100/ portTICK_RATE_MS),     // The timer period in ticks.
                                           pdTRUE,         // The timers will auto-reload themselves when they expire.
                                           (void*)2,     // Assign each timer a unique id equal to its array index.
                                           vTimerCallback2     // Each timer calls the same callback when it expires.
@@ -325,51 +217,7 @@ int main(void)
 		/* Initialize system */
 	SystemInit();
 	/* Initialize backup SRAM */
-	TM_BKPSRAM_Init();
-	/*Setup dau doc the*/
-
-					if( xTimers[3] != NULL )
-          {
-              // Start the timer.  No block time is specified, and even if one was
-              // it would be ignored because the scheduler has not yet been
-              // started.
-              if( xTimerStart( xTimers[3], 0 ) != pdPASS )
-              {
-                  // The timer could not be set into the Active state.
-              }
-						}		
-					if( xTimers[4] != NULL )
-          {
-              // Start the timer.  No block time is specified, and even if one was
-              // it would be ignored because the scheduler has not yet been
-              // started.
-              if( xTimerStart( xTimers[4], 0 ) != pdPASS )
-              {
-                  // The timer could not be set into the Active state.
-              }
-						}		
-
-					if( xTimers[5] != NULL )
-          {
-              // Start the timer.  No block time is specified, and even if one was
-              // it would be ignored because the scheduler has not yet been
-              // started.
-              if( xTimerStart( xTimers[5], 0 ) != pdPASS )
-              {
-                  // The timer could not be set into the Active state.
-              }
-						}		
-
-					if( xTimers[6] != NULL )
-          {
-              // Start the timer.  No block time is specified, and even if one was
-              // it would be ignored because the scheduler has not yet been
-              // started.
-              if( xTimerStart( xTimers[6], 0 ) != pdPASS )
-              {
-                  // The timer could not be set into the Active state.
-              }
-						}			
+	TM_BKPSRAM_Init();			
 	/* init OUTPUT*/
 	TM_GPIO_Init(RELAY_DK1_PORT, RELAY_DK1_PIN, TM_GPIO_Mode_OUT, TM_GPIO_OType_PP, TM_GPIO_PuPd_NOPULL, TM_GPIO_Speed_High);
 	TM_GPIO_Init(RELAY_DK2_PORT, RELAY_DK2_PIN, TM_GPIO_Mode_OUT, TM_GPIO_OType_PP, TM_GPIO_PuPd_NOPULL, TM_GPIO_Speed_High);
@@ -387,12 +235,12 @@ int main(void)
 	TM_GPIO_Init(ADD_BIT5_PORT, ADD_BIT5_PIN, TM_GPIO_Mode_IN, TM_GPIO_OType_PP, TM_GPIO_PuPd_UP, TM_GPIO_Speed_Medium);
 	TM_GPIO_Init(ADD_BIT6_PORT, ADD_BIT6_PIN, TM_GPIO_Mode_IN, TM_GPIO_OType_PP, TM_GPIO_PuPd_UP, TM_GPIO_Speed_Medium);
 	TM_GPIO_Init(ADD_BIT7_PORT, ADD_BIT7_PIN, TM_GPIO_Mode_IN, TM_GPIO_OType_PP, TM_GPIO_PuPd_UP, TM_GPIO_Speed_Medium);
-/* Initialize USART6 at 115200 baud, TX: PC6, RX: PC7 , COM 1 - RFID1 gan cong tac nguon*/ 
-	TM_USART_Init(USART6, TM_USART_PinsPack_1, 115200);
-/* Initialize USART3 at 115200 baud, TX: PD8, RX: PD9 ,	COM 2 -PC gan ethernet*/
+/* Initialize USART6 at 9600 baud, TX: PC6, RX: PC7 , COM 1 - RFID1 gan cong tac nguon*/ 
+	TM_USART_Init(USART6, TM_USART_PinsPack_1, 9600);
+/* Initialize USART3 at 9600 baud, TX: PD8, RX: PD9 ,	COM 2 -PC gan ethernet*/
 	TM_USART_Init(USART3, TM_USART_PinsPack_3, 9600);
-/* Initialize USART1 at 115200 baud, TX: PA9, RX: PA10, CONG 485 */
-	TM_USART_Init(USART1, TM_USART_PinsPack_1, 9600);
+/* Initialize USART1 at 4800 baud, TX: PA9, RX: PA10, CONG 485 */
+	TM_USART_Init(USART1, TM_USART_PinsPack_1, 4800);
 	if (!TM_RTC_Init(TM_RTC_ClockSource_Internal)) {
 		/* RTC was first time initialized */
 		/* Do your stuff here */
@@ -407,10 +255,10 @@ int main(void)
 	timeout=TM_BKPSRAM_Read8(22);
 	}
 	else flag_default=1;
-
+	send_485(1);
 /*Task Create Begin*/
-	xTaskCreate( vConfigure, (const signed char*)"Configure using DTMF", 
-		STACK_SIZE_MIN, NULL, tskIDLE_PRIORITY, NULL );
+//	xTaskCreate( vConfigure, (const signed char*)"Configure using DTMF", 
+//		STACK_SIZE_MIN, NULL, tskIDLE_PRIORITY, NULL );
 	xTaskCreate( vMain, (const signed char*)"Main run ...", 
 		STACK_SIZE_MIN, NULL, tskIDLE_PRIORITY, NULL );
 	xTaskCreate( vLedBlinkRed, (const signed char*)"Led Blink Task Red", 
@@ -850,14 +698,8 @@ void vLedBlinkRed(void *pvParameters)
 	TM_WATCHDOG_Reset();
 	while(1)
 	{
-		if(tcpclient->state==CLIENT_CONNECTED){
 		STM_EVAL_LEDToggle(LED_ORANGE);
 		vTaskDelay(100 / portTICK_RATE_MS );
-		}else{
-		STM_EVAL_LEDToggle(LED_ORANGE);
-		vTaskDelay(50 / portTICK_RATE_MS );
-		}
-
 		//	NVIC_SystemReset(); reset mach
 	TM_WATCHDOG_Reset();		
 	}
@@ -869,9 +711,9 @@ void vEthernet(void *pvParameters)
 		vTaskDelay(1000);
 //Put string to LCD
 		TM_HD44780_Clear();	
-		//TM_HD44780_Puts(0, 0, "----TIS8-PRO----CreartebyR&D-TIS"); /* 0 dong 1, 1 dong 2*/
-		//TM_HD44780_Puts(0, 2, "Welcom-->>TIS-OS");
-		//TM_HD44780_Puts(0, 3,buffer_lcd);
+		TM_HD44780_Puts(0, 0, "----TIS8-PRO----CreartebyR&D-TIS"); /* 0 dong 1, 1 dong 2*/
+		TM_HD44780_Puts(0, 2, "Welcom-->>TIS-OS");
+		TM_HD44780_Puts(0, 3,buffer_lcd);
 		vTaskDelay(1000);
 	/* Reset watchdog */
 	TM_WATCHDOG_Reset();
@@ -911,37 +753,35 @@ void vMain(void *pvParameters)
 	debug_test("Init Setup ...\n");
 	/*end by duc*/
 	TM_WATCHDOG_Reset();
+	flagState3Round = 1;
+	push_detex("\r\n");
 	while(1)
 	{
-	if(flag_config==0){
-	if(flag_485==1){
-	flag_485=0;
-	for(ik=0;i<2;i++){
-	push_detex(Sensortex[i]);
-	//push_detex("TEST");
-	recv_485(1);
-	}
-	
-	}
-	TM_WATCHDOG_Reset();
-	}
+		StackDETECT();
+		//push_detex("\r\n");
+		//StackLCD();
 	}
 }
 
 //******************************************************************************
 static void 	debug_test(char *str){
 	//
+	vTaskDelay(10);
 }
 static void 	push_detex(char *str){
 	//
 	send_485(1);
 	TM_USART_Puts(USART1,str);
+	vTaskDelay(5);
+	recv_485(1);
 }
 static void 	push_led(char *str){
 	//
+	vTaskDelay(10);
 }
 static void 	push_ccu(char *str){
 	//
+	vTaskDelay(10);
 }
 static void 	send_485(int i){
 
@@ -953,127 +793,144 @@ static void 	recv_485(int i){
 		TM_GPIO_SetPinLow(CCU_DIR_PORT,CCU_DIR_PIN);
 
 }
-void 					TM_USART3_ReceiveHandler(uint8_t c) {	// PC
+void 					TM_USART3_ReceiveHandler(uint8_t c) {	// LED
 	static uint8_t cnt=0;
 }
-void 					TM_USART6_ReceiveHandler(uint8_t c) {	// RFID1
-	static uint8_t cnt=0;
+void 					TM_USART1_ReceiveHandler(uint8_t c) {	// detex
+	static unsigned char data_rmc = 0;		
+	static unsigned char rx_buffer[15] = "";
+	static unsigned char FLAG = 0;
+	//data_rmc = c;
+	TM_USART_Putc(USART6,c);
+//		if(data_rmc != 0)
+//		{
+//		if((FLAG == 0) && (((data_rmc >= 1) && (data_rmc <= 63)) || (data_rmc == 0xE1) || (data_rmc == 0xE2)))
+//		{
+//			static unsigned char FLAG_ARR = 0;
+//			if((data_rmc >= 1) && (data_rmc <= 63)){
+//				FLAG_ARR++;
+//				rx_buffer[0] = data_rmc;
+//			}else if(FLAG_ARR == 1){
+//				FLAG_ARR = 0;
+//				rx_buffer[1] = data_rmc;
+//				FLAG = 1;
+//			}else{
+//				FLAG = 0;
+//				FLAG_ARR = 0;
+//			}
+//			
+//		}
+//		}else{
+//			FLAG = 0;
+//		}
+//		
+//		if(FLAG == 1) 		
+//		{
+//			if(rx_buffer[0] >= 1 && rx_buffer[0] <= 63)
+//			{
+//					//1 : Co xe, 2 : khong co xe, 3 : khong co tin hieu. O la` bi loi~
+//					saveInfoDetect(data_Detect,rx_buffer[0],(rx_buffer[1]==0xE2)?1:2);
+//			//		if(IN_BIT7) // neu bit thu 7 trong switch ON 		
+//			//		{	
+////						  printf("\r\nDetect TAU : %s>\r\nnCountTimeOutRe=%d\r\n",rx_buffer,nCountTimeOutRe);
+////						  printf("Detect ADD: %u, ZCU ADD:%u \r\n",rx_buffer[0],getAdd());
+////							printf("data_Detect: %s\r\n",data_Detect);
+//			//				((rx_buffer[1]==0xE2)?printf("Co xe do\r\n\r\n"):printf("Ko co xe do\r\n\r\n"));
+//			//		}				
+//					// da nhan du lieu, hoi vong ZCU khac				
+//					nCountTimeOutRe = TIME_WHAT_LOOP_DET + 1; 
+//			}
+//			FLAG = 0;
+//		}
 }
-void 					TM_USART1_ReceiveHandler(uint8_t c) {	// 485
-	static uint8_t cnt=0;
-	TM_USART_Putc(USART3,c);
-}
-uint16_t 			TM_ETHERNETCLIENT_CreateHeadersCallback(TM_TCPCLIENT_t* connection, char* buffer, uint16_t buffer_length) {
-	//sprintf(buffer,"%s",data_tcp);
-	return strlen(buffer);
-}
+void 					TM_USART6_ReceiveHandler(uint8_t c) {	// CCU
+	static unsigned char el_rmc = 0;    
+	static unsigned char reset = 0;    
+	static char data_rmc = 0;		
+	static char rx_buffer[15] = "";
+	static unsigned char rx_wr_index_rmc = 0;
+	static char send_buffer[30] = "";
 
-void 					TM_ETHERNETCLIENT_ReceiveDataCallback(TM_TCPCLIENT_t* connection, uint8_t* buffer, uint16_t buffer_length, uint16_t total_length) {
-	connection->headers_done = 1;
-	tcpclient=connection;
-}
-
-void 					TM_ETHERNETCLIENT_ConnectedCallback(TM_TCPCLIENT_t* connection) {
-	/* We are connected */
-	sprintf(str,"Connected to %s\n", connection->name);
-	debug_test(str);
-	tcpclient=connection;
-}
-
-void 					TM_ETHERNETCLIENT_ConnectionClosedCallback(TM_TCPCLIENT_t* connection, uint8_t success) {
-	/* We are disconnected, done with connection */
-	if (success) {
-	sprintf(str,"Connection %s successfully.Active%d\n", connection->name, *connection->active_connections_count);
-	debug_test(str);
-	}
-	/* Increase number of requests */
-	tcpclient=connection;
-	requests_count++;
-}
-
-void 					TM_ETHERNETCLIENT_ErrorCallback(TM_TCPCLIENT_t* connection) {
-	/* Print to user */
-	sprintf(str,"An error occured on connection %s\n", connection->name);
-	debug_test(str);
-	tcpclient=connection;
-}
-
-void 					TM_ETHERNETCLIENT_ConnectionStartedCallback(TM_TCPCLIENT_t* connection) {
-	/* Print to user */
-	sprintf(str,"Connection %s has started\n", connection->name);
-	debug_test(str);
-	tcpclient=connection;
-}
-void 					TM_ETHERNET_IPIsSetCallback(uint8_t ip_addr1, uint8_t ip_addr2, uint8_t ip_addr3, uint8_t ip_addr4, uint8_t dhcp) {
-	/* Called when we have valid IP, it might be static or DHCP */
-	
-	if (dhcp) {
-		/* IP set with DHCP */
-		sprintf(str,"IP: %d.%d.%d.%d assigned by DHCP server\n", ip_addr1, ip_addr2, ip_addr3, ip_addr4);
-		debug_test(str);
-	} else {
-		/* Static IP */
-		sprintf(str,"IP: %d.%d.%d.%d; STATIC IP used\n", ip_addr1, ip_addr2, ip_addr3, ip_addr4);
-		debug_test(str);
-	}
-	
-	/* Print MAC address to user */
-	sprintf(str,"MAC: %02X-%02X-%02X-%02X-%02X-%02X\n",
-		TM_ETHERNET_GetMACAddr(0),
-		TM_ETHERNET_GetMACAddr(1),
-		TM_ETHERNET_GetMACAddr(2),
-		TM_ETHERNET_GetMACAddr(3),
-		TM_ETHERNET_GetMACAddr(4),
-		TM_ETHERNET_GetMACAddr(5)
-	);
-	sprintf(str,"MAC: %02X-%02X-%02X-%02X-%02X-%02X\n",
-		TM_ETHERNET_GetMACAddr(0),
-		TM_ETHERNET_GetMACAddr(1),
-		TM_ETHERNET_GetMACAddr(2),
-		TM_ETHERNET_GetMACAddr(3),
-		TM_ETHERNET_GetMACAddr(4),
-		TM_ETHERNET_GetMACAddr(5)
-	);
-
-
-
-
-	/* Print 100M link status, 1 = 100M, 0 = 10M */
-	sprintf(str,"Link 100M: %d\n", TM_ETHERNET.speed_100m);
-	debug_test(str);
-//	TM_USART_Puts(USART6,"Link 100M: %d\n", TM_ETHERNET.speed_100m);
-	/* Print duplex status: 1 = Full, 0 = Half */
-	sprintf(str,"Full duplex: %d\n", TM_ETHERNET.full_duplex);
-	debug_test(str);
-//	TM_USART_Puts(USART6,"Full duplex: %d\n", TM_ETHERNET.full_duplex);
-}
-
-
-void 					TM_ETHERNET_LinkIsDownCallback(void) {
-	/* This function will be called when ethernet cable will not be plugged */
-	/* It will also be called on initialization if connection is not detected */
-}
-
-void 					TM_ETHERNET_LinkIsUpCallback(void) {
-	/* Cable has been plugged in back, link is detected */
-	/* I suggest you that you reboot MCU here */
-	/* Do important stuff before */
-}
-void 					TM_ETHERNET_SystemResetCallback(void) {
-	if (TM_ETHERNET_Init(macaddress[value_dip],ipadress, getwayadress, netmaskadress) == TM_ETHERNET_Result_Ok) {
-	debug_test("RE_ETHERNET_Init OK \n");
-	}
-}
-void 					TM_DELAY_1msHandler(void) {
-	/* Time update for ethernet, 1ms */
-	/* Add 1ms time for ethernet */
-	TM_ETHERNET_TimeUpdate(1);
-}
-void 					TM_ETHERNET_DHCPStartCallback(void) {
-	/* Print to user */
-	sprintf(str,"DHCP has started with assigning IP address\n");
-	debug_test(str);
-}
+		 if(data_rmc == '/')  
+		 {		
+					if(el_rmc == 3)
+					{
+							el_rmc = 0;
+							rx_wr_index_rmc = 0;			
+							for(reset = 0;reset < 15;reset++)
+							{
+								rx_buffer[reset] = 0;
+							}
+					}									
+					el_rmc  = 1;
+		 }
+		 else if((el_rmc == 1)&&(data_rmc == 'C'))
+		 {
+					el_rmc = 2;     
+		 }
+		 else if(el_rmc < 2)
+		 {
+					el_rmc = 0;
+		 }
+		 else if(el_rmc == 2)  
+		 {
+					el_rmc = 3;
+		 }                                                       
+		 else if((el_rmc == 3)&&(data_rmc == '>')) 		
+		 {
+			  rx_buffer[rx_wr_index_rmc] = 0;
+				//printf("DK:%d,%s\r\n",rx_wr_index_rmc,rx_buffer);			 
+				if((rx_wr_index_rmc != 2) && (rx_wr_index_rmc != 11) && (rx_wr_index_rmc != 10)) 
+				{
+						el_rmc = 0;
+						rx_wr_index_rmc = 0;			
+						for(reset = 0;reset < 15;reset++)
+						{
+							rx_buffer[reset] = 0;		
+						}
+						return;
+				}
+				if(addDevice == ((rx_buffer[0]-'0')*10 + (rx_buffer[1]-'0')))
+				{
+						if(rx_wr_index_rmc == 2) // hoi du lieu cua ZCU
+						{
+								data_Detect[16] = 0;
+								sprintf(send_buffer,"/C%02d%s>",addDevice,data_Detect); 	
+								//USART4putsf(send_buffer);	// debug
+								//USART1putsf(send_buffer); // day ra CCU
+						}
+						if((rx_wr_index_rmc == 11) || (rx_wr_index_rmc == 10)) // Nhan thong tin phan hoi tu CCU va 
+						{
+								sprintf(send_buffer,"/%s>",rx_buffer+2);
+								//USART3putsf(send_buffer);		// day ra bang led	
+								//USART4putsf(send_buffer);			//debug
+						}			
+				}
+				el_rmc = 0;
+				rx_wr_index_rmc = 0;					
+				for(reset = 0;reset < 15;reset++)
+				{
+						rx_buffer[reset] = 0;
+				}
+				return;
+		 }
+		 if(el_rmc == 3)
+		 {
+					if((((data_rmc >= 48) && (data_rmc < 58)) || (data_rmc == 'P')) && (rx_wr_index_rmc < 13))
+					{
+							rx_buffer[rx_wr_index_rmc++] = data_rmc;
+					}
+					else
+					{
+							el_rmc = 0;
+							rx_wr_index_rmc = 0;			
+							for(reset = 0;reset < 15;reset++)
+						  {
+									rx_buffer[reset] = 0;
+							}
+					}
+			}
+  }
 void 					vTimerCallback1( xTimerHandle  pxTimer ){
 	long lArrayIndex;
      /* Optionally do something if the pxTimer parameter is NULL. */
@@ -1098,6 +955,8 @@ void 					vTimerCallback2( xTimerHandle  pxTimer ){		//
 
      /* Increment the number of times that pxTimer has expired. */
      lExpireCounters[ lArrayIndex ] += 1;
+		flag_detect=1;
+	
  }
 void 					vTimerCallback3( xTimerHandle  pxTimer ){ 	// Read wiegand 34 1. 10ms
 
@@ -1255,15 +1114,268 @@ static void 	Timeup(char * buffer){
 		sscanf(buffer,"%d-%d-%d/%d-%d-%d",&h,&m,&s,&d,&mon,&year);
 		updatime(h,m,s,d,mon,year);
 }
-void 	show_detex(){
-	int i=0;
-	TM_HD44780_Clear();
-	sprintf(buffer_lcd,"");
-	for(i=0;1<64;i++){
-		if(detex[i]==0) strcat(buffer_lcd,"!");
-		if(detex[i]==1) strcat(buffer_lcd,"X");
-		if(detex[i]==2) strcat(buffer_lcd,"0");
+
+/*******************************************************************************
+* Function Name  : sendDataWhatLopDET
+* Description    : Gui du lieu toi cac DET
+* Input          : None
+* Output         : None
+* Return         : None
+* Attention		 : None
+*******************************************************************************/
+void sendDataWhatLopDET(char addressDET)
+{
+	char buffData[10] = "";
+	if(addressDET == 62) return;
+	sprintf(buffData,"%c%c%c%c",0xA3,addressDET,0x01,(0xA3+addressDET));
+	push_detex(buffData);
+}
+/*******************************************************************************
+* Function Name  : saveInfoDetect
+* Description    : luu tru du lieu vao mang data_Detect khi biet dia chi cua detect va gia tri 1 hay 0 hoac ?
+* Input          : mang luu tru cua detect, dia chi cua detect, gia tri 
+* Output         : None
+* Return         : None
+* Attention		 : None
+1 : Co xe, 2 : khong co xe, 3 : khong co tin hieu
+value nhan gia tri 1,2 hoac 3
+*******************************************************************************/
+void saveInfoDetect(char dataDetect[17],char addressDET,char value)
+{
+	char bstt = 0;
+	char buffD = 0;
+	char stt = addressDET;	
+	if((addressDET < 1) || (addressDET > 63) || (value < 1) || (value > 3))
+		return;
+	bstt = (addressDET - 1) / 4;
+	buffD = *(dataDetect + bstt);	
+	if(stt%4 == 0) 
+	{
+			stt = 4; 
+	}else
+		{
+				stt %= 4;
+		}	
+	switch(stt)
+	{
+			case 1: 
+			{
+					buffD &= 0x3F;
+					buffD |= (value << 6);
+			} break;
+			case 2: 
+			{
+					buffD &= 0xCF;
+					buffD |= (value << 4);
+			} break;	
+			case 3: 
+			{
+					buffD &= 0xF3;
+					buffD |= (value << 2);		
+			} break;	
+			case 4: 
+			{
+					buffD &= 0xFC;
+					buffD |= value;						
+			} break;		
+			default : return;				
 	}
-	TM_HD44780_Puts(0,0,buffer_lcd);
+	*(dataDetect + bstt) = buffD;
+	dataDetect[15] |=  0x03; // dam bao rang vi tri 64 cua detect luon luon mang gia tri 3
+	dataDetect[16]  =  0;
+}
+/*******************************************************************************
+* Function Name  : getInfoDetect
+* Description    : lay thong tin cua detect
+* Input          : noi luu tru du lieu va` dia chi cua detect
+* Output         : None
+* Return         : None
+* Attention		 : None
+1 : Co xe, 2 : khong co xe, 3 : khong co tin hieu. O la` bi loi~
+value nhan gia tri 1,2 hoac 3
+*******************************************************************************/
+char getInfoDetect(char dataDetect[17],char addressDET)
+{
+	char bstt = 0;
+	char buffD = 0;
+	char stt = addressDET;	
+	if((addressDET < 1) || (addressDET > 63))
+		return 0;
+	bstt = (addressDET - 1) / 4;
+	buffD = *(dataDetect + bstt);	
+	if(stt%4 == 0) 
+	{
+			stt = 4; 
+	}else
+		{
+				stt %= 4;
+		}	
+		switch(stt)
+		{
+			case 1: 
+			{
+					buffD = (uint8_t) (buffD >> 6);
+			} break;
+			case 2: 
+			{
+					buffD = (uint8_t) (buffD << 2);
+					buffD = (uint8_t) (buffD >> 6);
+			} break;	
+			case 3: 
+			{
+					buffD = (uint8_t) (buffD << 4);
+					buffD = (uint8_t) (buffD >> 6);			
+			} break;	
+			case 4: 
+			{
+					buffD = (uint8_t) (buffD << 6);
+					buffD = (uint8_t) (buffD >> 6);						
+			} break;		
+			default : return 0;
+		}
+		return buffD;
+}
+/*******************************************************************************
+* Function Name  : getInfoDetect
+* Description    : lay thong tin cua detect
+* Input          : noi luu tru du lieu va` dia chi cua detect
+* Output         : None
+* Return         : None
+* Attention		 : None
+1 : Co xe, 2 : khong co xe, 
+3 : khong co tin hieu. O la` bi loi~
+value nhan gia tri 1,2 hoac 3
+*******************************************************************************/
+uint32_t sumLostDetect(char dataDetect[17])
+{
+	uint32_t i = 0, sum = 0;
+	for(i=1;i<64;i++)
+	{
+		if(getInfoDetect(dataDetect,i) == 2)
+			sum++;
+	}
+	return sum;
+}
+/*******************************************************************************
+* Function Name  : sendDataWhatLopDET
+* Description    : Gui du lieu toi cac DET
+* Input          : None
+* Output         : None
+* Return         : None
+* Attention		 : None
+*******************************************************************************/
+
+void WhatLoopDetect(void)
+{
+	static uint8_t flagOne = 0; // co trang thai lan dau de bo qua qua' trinh lan dau tien cap nhat gia tri so lan hoi khong phan hoi
+	static uint32_t nCount = 0;
+	static uint8_t nCountAdd = 1;	
+//  if(flagState3Round==1) // Buoc 1 : hoi vong trang thai cua cac detect trong ZCU
+//  {
+//		 	if((nCount++ > TIME_WHAT_LOOP_DET) || nCountTimeOutRe++ > TIME_WHAT_LOOP_DET+5)
+//				if(nCount++ > TIME_WHAT_LOOP_DET)
+//		{
+					// luc vao kiem tra lenh nay, nhung ZCU[0] khong dung nen neu co gan thi cung khong bi anh huong toi
+					// du lieu da ghi
+//					if(flagOne) // bo qua lan dau tien khi vao chuong trinh nay
+//					{
+//							if(nCount > TIME_WHAT_LOOP_DET) // hoi ma khong nhan duoc phan hoi ve
+//							{
+//									if(nCountAdd != 1)
+//											saveInfoDetect(data_Detect,nCountAdd-1,3);
+//									else 
+//											saveInfoDetect(data_Detect,DETinZCU-1,3);
+//							}
+//					}else flagOne = 1;
+					// Chi gui lenh hoi du lieu sang ZCU ke tiep trong 2 truong hop
+					// 1 : het thoi gian TIME_WHAT_LOOP_ZCU ( cau hinh trong defineall.h
+					// 2 : Bien nCountTimeOutRe tang bang voi thoi gian TIME_WHAT_LOOP_ZCU
+					sendDataWhatLopDET(nCountAdd);
+					nCount = 0;
+					nCountTimeOutRe = 0; // bat dau tinh thoi gian time out 
+					if(++nCountAdd >= DETinZCU) // mac dinh la moi CCU quan ly 63 ZCU
+					{
+						FlagComple = 1; // khi nao nhang co len bang 1 thi hien thi LCD
+						nCountAdd = 1;
+						flagState3Round = 1; // chuyen sang buoc 2: tinh toan va day du lieu 
+					}
+//				}
+//		}
+}
+/*******************************************************************************
+* Function Name  : StackDETECT
+* Description    : Main program
+* Input          : None
+* Output         : None
+* Return         : None
+* Attention		 : None
+*******************************************************************************/
+void StackDETECT(void)
+{
+		if(flag_detect == 1) // hoi vong detect 
+		{
+				//IWDG_ReloadCounter(); // reset WDT
+				flagState3Round = 1;
+				WhatLoopDetect();
+				//TM_USART_Puts(USART3,"TST");
+				flag_detect = 0;
+		}	
 }
 
+/*******************************************************************************
+* Function Name  : StackLCD
+* Description    : Hien thi thong tin len LCD
+* Input          : None
+* Output         : None
+* Return         : None
+* Attention		 : None
+1 : Co xe, 2 : khong co xe, 3 : khong co tin hieu. O la` bi loi~
+value nhan gia tri 1,2 hoac 3
+*******************************************************************************/
+void StackLCD(void)
+{
+		char disPlay[64] = "";
+		char iCountLCD = 0;		
+		char numberLost = 0;
+//	if((flag_lcdset==1) && (FlagComple == 1)) // tinh thoi gian 2s de hien thi LCD
+//	if(FlagComple == 1) // cu moi lan quet xong 1 zone thi cap nhat du lieu len LCD
+//	{
+		FlagComple = 0;
+		flag_lcdset=0;
+				for(iCountLCD=0;iCountLCD<63;iCountLCD++)
+				{
+						switch(getInfoDetect(data_Detect,iCountLCD+1))
+						{
+								case 1: 
+									disPlay[iCountLCD] = '1'; 
+									break;
+								case 2: 
+									disPlay[iCountLCD] = '0';
+									numberLost++;
+									break;
+								case 3: 
+									disPlay[iCountLCD] = '?'; 
+									break;
+								default : 
+									disPlay[iCountLCD] = '?';
+									break;
+						}
+				}
+				disPlay[61] = disPlay[62];  
+				disPlay[62] = numberLost/10+48;
+				disPlay[63] = numberLost%10+48;
+				TM_HD44780_Puts(0,0,disPlay);
+				TM_HD44780_Puts(0,1,disPlay+16);
+				TM_HD44780_Puts(0,2,disPlay+32);
+				TM_HD44780_Puts(0,3,disPlay+48);
+//		}
+}
+void reset_Data_Detect(void)
+{
+	char i;
+	for(i=0;i<16;i++)
+	{
+			data_Detect[i] = 255;
+	}
+	data_Detect[16] = 0;
+}

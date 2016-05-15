@@ -85,7 +85,7 @@ unsigned char lcd_menu40	=0;// giao dien showsetup
 unsigned char lcd_menu41	=0;
 unsigned char lcd_menu42	=0;
 unsigned char lcd_menu43	=0;
-
+unsigned char lcd_show		=0;
 unsigned char lcd_menu50	=0;// giao dien lua chon thiet bi
 unsigned char lcd_menu51	=0;
 unsigned char lcd_menu52	=0;
@@ -174,10 +174,10 @@ uint8_t 				macaddress[64][6]	=	{ // Co dinh
 															{0x00,0xE0,0x69,0xF0,0x00,0x3F},	
 															{0x00,0xE0,0x69,0xF0,0x00,0x40},	//64											
 															};
-uint8_t 				ipadress[4]			=	{10,24,12,101};	// khi chua cau hinh 
-uint8_t 				getwayadress[4]	=	{10,24,12,1};		// khi chua cau hinh
+uint8_t 				ipadress[4]			=	{192,168,1,100};	// khi chua cau hinh 
+uint8_t 				getwayadress[4]	=	{192,168,1,1};		// khi chua cau hinh
 uint8_t 				netmaskadress[4]=	{255,255,255,0};	// khi chua cau hinh
-uint8_t					serveradress[4]	=	{10,24,12,11};	// khi chua cau hinh
+uint8_t					serveradress[4]	=	{192,168,1,10};	// khi chua cau hinh
 uint16_t				portadress 			= 8866;							// khi chua cau hinh
 unsigned int 		status_sv				=0;									//lenh dk tu server la 0 1 2
 unsigned char 	flag_status_sv	=0;									//cho phep nhan lenh dk tu server.
@@ -203,6 +203,7 @@ char 						IDCAR1[7]				={0x00,0x00,0x00,0x00,0x00,0x00,0x00};	// luu gia tri ID
 char 						UID1[30];
 char 						UID1_save[30];
 char 						IDCAR2[10];
+int 						card232=0;
 /*Khoi Action*/
 void 						ProcessAction(void);
 void 						Serveprocess(void);
@@ -211,16 +212,17 @@ void 						WaitPC(unsigned int t);
 unsigned char 	flag_PC=0;		// doi pc phan hoi va xu li xong du lieu nhan veroi moi bat
 unsigned char 	flag_SV=0;		// doi server phan hoi va xu li xong du lieu nhan ve roi moi bat
 /*Khoi VIP*/
-char *vip_id[2] = {		// ma the vip
-	"FCB1BE49", //
-	"CCC5C749", //
-//	"00000000",	//
-//	"00000000",	//
+char *vip_id[4] = {		// ma the vip
+	"FC23D993", //
+	"8C63DA93", //
+	"EC71D793",	//
+	"4CD0D793",	//
 	};
 /*time out*/
-unsigned int 			timeout					=0;	// thoi gian active relay
+unsigned int 			timeout_relay						=1;		//giay thoi gian active relay 
+unsigned int 			timeout_process					=11;	//giay thoi gian tien trinh tay quay
 /* Khoi Ban phim */
-unsigned char 		express					=0;			// gia tri nhan duoc tu ban phim
+unsigned char 		express					=0;						// gia tri nhan duoc tu ban phim
 unsigned char 		flag_dtmf 			=0;	
 /*Khoi 485*/
 int LEDStatus											=0;						// the hien trang thai cua led hien thi
@@ -305,13 +307,13 @@ int main(void)
                                           vTimerCallback2     // Each timer calls the same callback when it expires.
                                       );
           xTimers[3] = xTimerCreate(timer_xx,         // Just a text name, not used by the kernel.
-                                          (10/ portTICK_RATE_MS),     // The timer period in ticks.
+                                          (30/ portTICK_RATE_MS),     // The timer period in ticks.
                                           pdTRUE,         // The timers will auto-reload themselves when they expire.
                                           (void*)3,     // Assign each timer a unique id equal to its array index.
                                           vTimerCallback3     // Each timer calls the same callback when it expires.
                                       );
           xTimers[4] = xTimerCreate(timer_xx,         // Just a text name, not used by the kernel.
-                                          (10/ portTICK_RATE_MS),     // The timer period in ticks.
+                                          (30/ portTICK_RATE_MS),     // The timer period in ticks.
                                           pdTRUE,         // The timers will auto-reload themselves when they expire.
                                           (void*)4,     // Assign each timer a unique id equal to its array index.
                                           vTimerCallback4     // Each timer calls the same callback when it expires.
@@ -354,9 +356,7 @@ int main(void)
 	/* Initialize backup SRAM */
 	TM_BKPSRAM_Init();
 	/*Setup dau doc the*/
-//	TM_BKPSRAM_Write8(1,0);	// 0 la 26bit va 34 bit, 1 la 26bit, 2 la 34bit.
-//	TM_BKPSRAM_Write8(2,0);	// 0 la 26bit va 34 bit, 1 la 26bit, 2 la 34bit.
-	if(TM_BKPSRAM_Read8(1)==2){
+	if(TM_BKPSRAM_Read8(1)==2){		// dau doc WG1
 					if( xTimers[3] != NULL )
           {
               // Start the timer.  No block time is specified, and even if one was
@@ -368,7 +368,7 @@ int main(void)
               }
 						}		
 }
-	if(TM_BKPSRAM_Read8(2)==2){
+	if(TM_BKPSRAM_Read8(2)==2){		// dau doc WG1
 					if( xTimers[4] != NULL )
           {
               // Start the timer.  No block time is specified, and even if one was
@@ -380,7 +380,7 @@ int main(void)
               }
 						}		
 }
-	if(TM_BKPSRAM_Read8(1)==1){
+	if(TM_BKPSRAM_Read8(1)==1){		// dau doc WG2
 					if( xTimers[5] != NULL )
           {
               // Start the timer.  No block time is specified, and even if one was
@@ -392,7 +392,7 @@ int main(void)
               }
 						}		
 }
-	if(TM_BKPSRAM_Read8(2)==1){
+	if(TM_BKPSRAM_Read8(2)==1){		// dau doc WG2
 					if( xTimers[6] != NULL )
           {
               // Start the timer.  No block time is specified, and even if one was
@@ -402,12 +402,17 @@ int main(void)
               {
                   // The timer could not be set into the Active state.
               }
-						}			
+					}			
 }
-	TM_BKPSRAM_Write8(3,0);	// 0 la khong su dung, 1 co su dung.
+	if(TM_BKPSRAM_Read8(3)==1){ 	// Dau doc rs232
+		card232=1;
+	}
+	else card232=0;
 	/*Setup giao tiep RS232*/
-	TM_BKPSRAM_Write8(4,0);	// 0 la khong su dung, 1 co su dung.
+	//TM_BKPSRAM_Write8(3,0);	// 0 la khong su dung, 1 co su dung.
+	
 	/*Setup giao tiep 485*/
+	TM_BKPSRAM_Write8(4,0);	// 0 la khong su dung, 1 co su dung.
 	TM_BKPSRAM_Write8(5,0);	// 0 la 9600, 1 la 115200.
 	/*Setup MicroSDcar*/
 	TM_BKPSRAM_Write8(6,0); // 0 la khong luu, 1 la co luu du lieu
@@ -444,9 +449,14 @@ int main(void)
 	read_sw_add();
 	if(TM_BKPSRAM_Read8(0)==1){
 	flag_default=0;
-	timeout=TM_BKPSRAM_Read8(22);
+	timeout_relay=TM_BKPSRAM_Read8(22);
+	timeout_process=TM_BKPSRAM_Read8(23);
+	value_dip=TM_BKPSRAM_Read8(24);
 	}
-	else flag_default=1;
+	else {
+		flag_default=1;
+		card232=1;
+	}
 //flag_config=0;
 
 /*Task Create Begin*/
@@ -464,13 +474,16 @@ int main(void)
 //******************************************************************************
 void vConfigure(void *pvParameters)
 {
-int 					ipadress1[4]			=	{192,168,1,188};
-int 					getwayadress1[4]	=	{192,168,1,1};
-int						serveradress1[4]	=	{192,168,1,250};
-int						portadress1 			= 8866;	
-int						timeout1					=1;
+int 					ipadress1[4]			=	{0,0,0,0};
+int 					getwayadress1[4]	=	{0,0,0,0};
+int						serveradress1[4]	=	{0,0,0,0};
+int						portadress1 			= 0;	
+int						timeout_relay1					=	0;
+int						timeout_process1					=	0;
 int						wg1=0;
 int						wg2=0;
+int 					card2321=0;
+int 					namedevice=0;
 	lcd_menu=1;
 	TM_WATCHDOG_Reset();
 	while(1)
@@ -510,9 +523,9 @@ int						wg2=0;
 		}
 		}
 		sprintf(buffer_lcd,"Main Setup TIS8\n\r");
-		strcat(buffer_lcd,"1.Card....4.Show\r");
-		strcat(buffer_lcd,"2.TCPIP...5.Type\r");
-		strcat(buffer_lcd,"3.OutPut..6.OK");
+		strcat(buffer_lcd,"1.Card..||4.Show\r");
+		strcat(buffer_lcd,"2.TCPIP.||5.Type\r");
+		strcat(buffer_lcd,"3.OutPut|6.Ok");
 		
 		}
 		if(lcd_menu10){
@@ -561,8 +574,8 @@ int						wg2=0;
 		}
 		if(lcd_menu13){
 		sprintf(buffer_lcd,"SetRS232\n\r");
-		strcat(buffer_lcd,"1.Baud 9600\n\r");
-		strcat(buffer_lcd,"2.Baud 115200\n\r");
+		strcat(buffer_lcd,"1.Use\n\r");
+		strcat(buffer_lcd,"2.NotUse\n\r");
 		strcat(buffer_lcd,"1or2->#Ok");
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
@@ -596,33 +609,32 @@ int						wg2=0;
 		sprintf(buffer_lcd,"1.IP\n\r");
 		strcat(buffer_lcd,"2.IPserver\n\r");
 		strcat(buffer_lcd,"3.Port\n\r");
-		strcat(buffer_lcd,"4.DefaulGetway");
-		
+		strcat(buffer_lcd,"4.DefaulGetway");		
 		}
 		if(lcd_menu21){
-		sprintf(buffer_lcd,"SetIPdevice\n\r");
-		strcat(buffer_lcd,"->#Ok");
+		sprintf(buffer_lcd,"SetIPdevice\n\rEnd Phim #\n\r");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);
 		}
 		if(lcd_menu22){
 		sprintf(buffer_lcd,"SetIPServer\n\r");
-		strcat(buffer_lcd,"->#Ok");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);
 		}
 		if(lcd_menu23){
 		sprintf(buffer_lcd,"SetPort\n\r");
-		strcat(buffer_lcd,"->#Ok");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);	
 		}
 		if(lcd_menu24){
 		sprintf(buffer_lcd,"SetGetway\n\r");
-		strcat(buffer_lcd,"->#Ok");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);
@@ -668,27 +680,23 @@ int						wg2=0;
 		memset(buffer_lcd,0,0);		
 		}
 		if(lcd_menu32){
-		sprintf(buffer_lcd,"SetTimeout-Relay\n\r");
-		strcat(buffer_lcd,"->#Ok");
-		add_str_dtmf=1;
-		memset(str_dtmf,0,0);
-		memset(buffer_lcd,0,0);
+		sprintf(buffer_lcd,"SetTimeout-Relay\n\rEnd Phim #\n\r");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);
 		}
 		if(lcd_menu33){
 		sprintf(buffer_lcd,"TCPServer\n\r");
-		strcat(buffer_lcd,"1.Yes\n\r");
-		strcat(buffer_lcd,"2.No\n\r");
-		strcat(buffer_lcd,"->#Ok");
+		strcat(buffer_lcd,"1.Yes-2.No\n\r");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);		
 		}
 		if(lcd_menu34){
-		sprintf(buffer_lcd,"Time-Process\n\r");
-		strcat(buffer_lcd,"->#Ok");
+		sprintf(buffer_lcd,"Time-Process\n\rEnd Phim #\n\r");
+		TM_HD44780_BlinkOn();
 		add_str_dtmf=1;
 		memset(str_dtmf,0,0);
 		memset(buffer_lcd,0,0);		
@@ -698,25 +706,25 @@ int						wg2=0;
 		flag_dtmf=0;
 		TM_HD44780_Clear();
 		if(express=='1'){
-			
+			lcd_show=1;
 			lcd_menu41=1;
 			lcd_menu40=0;
 		}
 		if(express=='2'){
-			
+			lcd_show=1;
 			lcd_menu42=1;
 			lcd_menu40=0;
 		}
 		if(express=='3'){
-			
+			lcd_show=1;
 			lcd_menu43=1;
 			lcd_menu40=0;
 		}
 		}
-		sprintf(buffer_lcd,"Show select\n\r");
+		sprintf(buffer_lcd,"Device:%d\n\r",TM_BKPSRAM_Read8(24));
 		strcat(buffer_lcd,"1.IP,Server\n\r");
 		strcat(buffer_lcd,"2.Card-Port\n\r");
-		strcat(buffer_lcd,"3.Relay-DefaulGW");		
+		strcat(buffer_lcd,"3.Relay-DefaulGW");
 		}
 		if(lcd_menu41){
 			ipadress[0]=TM_BKPSRAM_Read8(7);
@@ -750,14 +758,16 @@ int						wg2=0;
 	}
 	}
 	}
-	}
+		if(card2321==1) strcat(buffer_lcd,"\n\rUsing 232");
+			else strcat(buffer_lcd,"\n\rNot232");
+		}
 		if(lcd_menu43){
-		timeout=TM_BKPSRAM_Read8(22);
+		timeout_relay=TM_BKPSRAM_Read8(22);
 		getwayadress[0]=TM_BKPSRAM_Read8(18);
 		getwayadress[1]=TM_BKPSRAM_Read8(19);
 		getwayadress[2]=TM_BKPSRAM_Read8(20);
 		getwayadress[3]=TM_BKPSRAM_Read8(21);
-		sprintf(buffer_lcd,"TimeoutRelay\n\r%d\n\rDefault Gw\n\r%d.%d.%d.%d",timeout,getwayadress[0],getwayadress[1],getwayadress[2],getwayadress[3]);
+		sprintf(buffer_lcd,"TimeoutRelay\n\r%d\n\rDefault Gw\n\r%d.%d.%d.%d",timeout_relay,getwayadress[0],getwayadress[1],getwayadress[2],getwayadress[3]);
 		}
 		if(lcd_menu50){
 		if(flag_dtmf==1){
@@ -780,29 +790,38 @@ int						wg2=0;
 		}
 		}
 		sprintf(buffer_lcd,"Device-Type\n\r");
-		strcat(buffer_lcd,"1.Tayquay\n\r");
+		strcat(buffer_lcd,"1.Name Device\n\r");
 		strcat(buffer_lcd,"2.Swing\n\r");
 		strcat(buffer_lcd,"3.......");		
+		}
+		if(lcd_menu51){
+		sprintf(buffer_lcd,"Name Setup\n\r");
+		TM_HD44780_BlinkOn();
+		add_str_dtmf=1;
+		memset(str_dtmf,0,0);
+		memset(buffer_lcd,0,0);	
 		}
 		TM_HD44780_Puts(0,0,buffer_lcd);
 		sprintf(buffer_lcd,"");
 	}
 
 	if(flag_dtmf==1){
-		if(add_str_dtmf==1){
+			if(add_str_dtmf==1){
 			flag_dtmf=0;
 			TM_HD44780_Clear();
-			if(lcd_menu11==1)TM_HD44780_Puts(0,0,"Wiegand1");
-			if(lcd_menu12==1)TM_HD44780_Puts(0,0,"Wiegand2");
-			if(lcd_menu13==1)TM_HD44780_Puts(0,0,"Baudrate");
-			if(lcd_menu21==1)TM_HD44780_Puts(0,0,"IPdevice");
-			if(lcd_menu22==1)TM_HD44780_Puts(0,0,"IPServer");
-			if(lcd_menu23==1)TM_HD44780_Puts(0,0,"Port");
-			if(lcd_menu24==1)TM_HD44780_Puts(0,0,"Default GW");
-			if(lcd_menu32==1)TM_HD44780_Puts(0,0,"TimeoutRelay");
+			if(lcd_menu11==1)TM_HD44780_Puts(0,0,"Wiegand1\r\n");
+			if(lcd_menu12==1)TM_HD44780_Puts(0,0,"Wiegand2\r\n");
+			if(lcd_menu13==1)TM_HD44780_Puts(0,0,"1-Yes.2-No\r\n");
+			if(lcd_menu21==1)TM_HD44780_Puts(0,0,"IPdevice\r\n");
+			if(lcd_menu22==1)TM_HD44780_Puts(0,0,"IPServer\r\n");
+			if(lcd_menu23==1)TM_HD44780_Puts(0,0,"Port\r\n");
+			if(lcd_menu24==1)TM_HD44780_Puts(0,0,"Default GW\r\n");
+			if(lcd_menu32==1)TM_HD44780_Puts(0,0,"TimeoutRelay\r\n");
+			if(lcd_menu34==1)TM_HD44780_Puts(0,0,"TimeoutProcess\r\n");
+			if(lcd_menu51==1)TM_HD44780_Puts(0,0,"NAME Device\r\n");
 			strcat(str_dtmf,buffer_dtmf);
-			sprintf(buffer_dtmf,"");
-			TM_HD44780_Puts(0,1,str_dtmf);
+			TM_HD44780_Puts(0,2,str_dtmf);
+			
 		}
 			if(express=='#'){
 			if((lcd_menu10==1)||(lcd_menu20==1)||(lcd_menu30==1)||(lcd_menu40==1)||(lcd_menu50==1)){
@@ -828,6 +847,12 @@ int						wg2=0;
 				}
 			if(lcd_menu13==1){
 				printf_d(str_dtmf);
+				sscanf(str_dtmf,"%d#",&card2321);
+					/*Setup giao tiep TCPIP*/
+				TM_BKPSRAM_Write16(3,card2321);		//rs232		
+				sprintf(str,"%d",card2321);
+				printf_d(str);
+				sprintf(str_dtmf,"");
 				lcd_menu10=1;
 				lcd_menu13=0;
 				lcd_menu=0;
@@ -835,11 +860,21 @@ int						wg2=0;
 			if(lcd_menu21==1){	// ip device
 				printf_d(str_dtmf);
 				sscanf(str_dtmf,"%d.%d.%d.%d#",&ipadress1[0],&ipadress1[1],&ipadress1[2],&ipadress1[3]);
+				if((ipadress1[0])!=0) 
+				{
+					TM_HD44780_Puts(0,2,"Configure OK");
+					vTaskDelay(1000);
+				}else
+				{
+				TM_HD44780_Puts(0,2,"Configure ERR");
+				vTaskDelay(1000);
+				}
 					/*Setup giao tiep TCPIP*/
 				TM_BKPSRAM_Write8(7,ipadress1[0]);		//IP1 device
 				TM_BKPSRAM_Write8(8,ipadress1[1]); 		//IP2 device
 				TM_BKPSRAM_Write8(9,ipadress1[2]);		//IP3 device
-				TM_BKPSRAM_Write8(10,ipadress1[3]);		//IP4 device				
+				TM_BKPSRAM_Write8(10,ipadress1[3]);		//IP4 device
+				
 				sprintf(str,"%x.%x.%x.%x",ipadress[0],ipadress[1],ipadress[2],ipadress[3]);
 				printf_d(str);
 				sprintf(str_dtmf,"");
@@ -850,6 +885,15 @@ int						wg2=0;
 			if(lcd_menu22==1){	// ip server
 				printf_d(str_dtmf);
 				sscanf(str_dtmf,"%d.%d.%d.%d#",&serveradress1[0],&serveradress1[1],&serveradress1[2],&serveradress1[3]);
+				if((serveradress1[0])!=0) 
+				{
+					TM_HD44780_Puts(0,2,"Configure OK");
+					vTaskDelay(1000);
+				}else
+				{
+				TM_HD44780_Puts(0,2,"Configure ERR");
+				vTaskDelay(1000);
+				}
 					/*Setup giao tiep TCPIP*/
 				TM_BKPSRAM_Write8(11,serveradress1[0]);		//IP1 server
 				TM_BKPSRAM_Write8(12,serveradress1[1]); 	//IP2 server
@@ -865,7 +909,16 @@ int						wg2=0;
 			if(lcd_menu24==1){	// default gw
 				printf_d(str_dtmf);
 				sscanf(str_dtmf,"%d.%d.%d.%d#",&getwayadress1[0],&getwayadress1[1],&getwayadress1[2],&getwayadress1[3]);
-					/*Setup giao tiep TCPIP*/
+				if((getwayadress1[0])!=0) 
+				{
+					TM_HD44780_Puts(0,2,"Configure OK");
+					vTaskDelay(1000);
+				}else
+				{
+				TM_HD44780_Puts(0,2,"Configure ERR");
+				vTaskDelay(1000);
+				}
+				/*Setup giao tiep TCPIP*/
 				TM_BKPSRAM_Write8(18,getwayadress1[0]);		//IP1 server
 				TM_BKPSRAM_Write8(19,getwayadress1[1]); 	//IP2 server
 				TM_BKPSRAM_Write8(20,getwayadress1[2]);		//IP3 server
@@ -889,39 +942,34 @@ int						wg2=0;
 				lcd_menu23=0;
 				lcd_menu=0;
 			}
-			if(lcd_menu32==1){	// Time out
+			if(lcd_menu31==1){	//
+				lcd_menu30=1;
+				lcd_menu31=0;
+				lcd_menu=0;
+				}
+			if(lcd_menu32==1){	// Time out relay
 				printf_d(str_dtmf);
-				sscanf(str_dtmf,"%d#",&timeout1);
+				sscanf(str_dtmf,"%d#",&timeout_relay1);
 					/*Setup giao tiep TCPIP*/
-				TM_BKPSRAM_Write8(22,timeout1);		//IP1 device		
-				sprintf(str,"%d",timeout1);
+				TM_BKPSRAM_Write8(22,timeout_relay1);		
+				sprintf(str,"%d",timeout_relay1);
 				printf_d(str);
 				sprintf(str_dtmf,"");
 				lcd_menu30=1;
 				lcd_menu32=0;
 				lcd_menu=0;
 			}
-			if(lcd_menu31==1){
-				lcd_menu30=1;
-				lcd_menu31=0;
-				lcd_menu=0;
-				}
-			if(lcd_menu32==1){
-				lcd_menu30=1;
-				lcd_menu32=0;
-				lcd_menu=0;
-				}
 			if(lcd_menu33==1){
 				lcd_menu30=1;
 				lcd_menu33=0;
 				lcd_menu=0;
 				}
-			if(lcd_menu34==1){
+			if(lcd_menu34==1){	// time out process
 				printf_d(str_dtmf);
-				sscanf(str_dtmf,"%d#",&timeout1);
+				sscanf(str_dtmf,"%d#",&timeout_process1);
 					/*Setup giao tiep TCPIP*/
-				TM_BKPSRAM_Write8(23,timeout1);		//IP1 device		
-				sprintf(str,"%d",timeout1);
+				TM_BKPSRAM_Write8(23,timeout_process1);				
+				sprintf(str,"%d",timeout_process1);
 				printf_d(str);
 				sprintf(str_dtmf,"");
 				lcd_menu30=1;
@@ -944,6 +992,13 @@ int						wg2=0;
 				lcd_menu=0;
 				}
 			if(lcd_menu51==1){
+				printf_d(str_dtmf);
+				sscanf(str_dtmf,"%2d#",&namedevice);
+					/*Setup giao tiep TCPIP*/
+				TM_BKPSRAM_Write8(24,namedevice);		//IP1 device		
+				sprintf(str,"%d",namedevice);
+				printf_d(str);
+				sprintf(str_dtmf,"");
 				lcd_menu50=1;
 				lcd_menu51=0;
 				lcd_menu=0;
@@ -959,7 +1014,9 @@ int						wg2=0;
 				lcd_menu=0;
 				}			
 			add_str_dtmf=0;
-		}
+			TM_HD44780_BlinkOff();
+			TM_HD44780_Clear();
+			}
 			if(express=='6'){
 		if(lcd_menu==1)
 		TM_BKPSRAM_Write8(0,1);
@@ -1019,16 +1076,16 @@ void vEthernet(void *pvParameters)
 	getwayadress[2]=TM_BKPSRAM_Read8(20);
 	getwayadress[3]=TM_BKPSRAM_Read8(21);
 	}
+	else
 	ipadress[3]=ipadress[3]+value_dip;
 	if (TM_ETHERNET_Init(macaddress[value_dip],ipadress, getwayadress, netmaskadress) == TM_ETHERNET_Result_Ok) {
 	printf_d("TM_ETHERNET_Init OK \n");
 	}
-//Put string to LCD
+//Put string to LCD 
 		TM_HD44780_Clear();	
 		TM_HD44780_Puts(0, 0, "----TIS8-PRO----CreartebyR&D-TIS"); /* 0 dong 1, 1 dong 2*/
-		TM_HD44780_Puts(0, 2, "Welcom-->>TIS-OS");
-		sprintf(buffer_lcd,"Time out OS:%d", timeout);
-		TM_HD44780_Puts(0, 3,buffer_lcd);
+		sprintf(buffer_lcd,"T.O.Relay:%d\n\rT.O.Process:%d",timeout_relay,timeout_process);
+		TM_HD44780_Puts(0, 2,buffer_lcd);
 		vTaskDelay(1000);
 		TM_HD44780_Clear();
 	/* Print MAC address to user */
@@ -1103,10 +1160,10 @@ void vMain(void *pvParameters)
 //		TM_EXTI_Attach(OPT_PORT,OPT_PIN2, TM_EXTI_Trigger_Falling);
 /* int DIR 485 set = send , reset = recvice*/ 
 		TM_GPIO_Init(CCU_DIR_PORT, CCU_DIR_PIN, TM_GPIO_Mode_OUT, TM_GPIO_OType_PP, TM_GPIO_PuPd_UP, TM_GPIO_Speed_High);
-		TM_GPIO_SetPinHigh(CCU_DIR_PORT,CCU_DIR_PIN);
+		//TM_GPIO_SetPinHigh(CCU_DIR_PORT,CCU_DIR_PIN);
 	if(flag_config==0){	
 		printf_d("Init main ...\n");
-		read_sw_add();
+//		read_sw_add();
 		sprintf(ACM,"ACM%03d",value_dip);
 	//timeout = 1;
 		memset(str,'\0',0);
@@ -1114,7 +1171,7 @@ void vMain(void *pvParameters)
 		flag_RFID1=0;
 		flag_serve=0;
 		flag_test=0;
-		updatime(01,01,01,01,01,15);
+		updatime(01,01,01,11,06,16);
 // configure role mo rong
 		turn_off_dk3();
 		turn_off_dk4();
@@ -1137,7 +1194,7 @@ void vMain(void *pvParameters)
 	if(flag_ok){
 	if(flag_pass!=0){
 	flag_pass++;
-	if(flag_pass>20) flag_pass=0;
+	if(flag_pass>(timeout_process*2)) flag_pass=0;
 	}
 	if(flag_pass!=0){
 		if(tcpclient->state==1)sprintf(buffer_lcd,"Device:%s..%d\rConnected.......\rG:Open.Luot:%04d",ACM,tcpclient->state,luotdi);
@@ -1297,7 +1354,7 @@ if(flag_test==1){
 }	
 /* Quan li thoi gian cho tung su kien relay actived*/
 timer_dk1 = timerdk1/2;	
-if (timer_dk1 >= timeout){
+if (timer_dk1 >= timeout_relay){
 			turn_off_dk1();
 			flag_R10 =0;
 			timerdk1=0;
@@ -1309,7 +1366,7 @@ if (timer_dk1 >= timeout){
 			WaitPC(50);
 		}
 timer_dk2 = timerdk2/2;
-if (timer_dk2 >= timeout){
+if (timer_dk2 >= timeout_relay){
 			turn_off_dk2();
 			flag_R20 =0;
 			timerdk2=0;
@@ -1344,7 +1401,7 @@ if (timer_dk4 >= 4){
 /* Tran duc code*/
 static void  	printf_d(char *str){
 	TM_USART_Puts(USART3,str);
-	//vTaskDelay(5);
+	vTaskDelay(5);
 }
 void 					ProcessAction(void){
 		if(strncmp(BufferCom3,"R10",3)==0) // mo relay 1
@@ -1414,7 +1471,7 @@ void 					Serveprocess(){
 		flag_R10=1;
 		timerdk1 =0;
 		flag_R21=1;
-		timerdk4 =0;		
+		timerdk4 =0;
 	}
 		if(status_sv==3)				// mo relay 3
 	{
@@ -1686,7 +1743,7 @@ void 					vTimerCallback2( xTimerHandle  pxTimer ){		//
 
      /* Increment the number of times that pxTimer has expired. */
      lExpireCounters[ lArrayIndex ] += 1;
-		//TM_USART_Puts(USART6,SelectCard);
+		if(card232==1)TM_USART_Puts(USART6,SelectCard);
  }
 void 					vTimerCallback3( xTimerHandle  pxTimer ){ 	// Read wiegand 34 1. 10ms
 		static uint32_t countTimeOut1 = 0;
@@ -1716,11 +1773,11 @@ void 					vTimerCallback3( xTimerHandle  pxTimer ){ 	// Read wiegand 34 1. 10ms
 				card_1 = 0;
 				count_1 = 0;
 				flag_finish_1 = 1;
-				//if(flag_pass==0)
-				//{
+				if(flag_pass==0)
+				{
 					flag_wiegand=1; // cho phep xu li du lieu xi tien trinh da ok
 					flag_wiegand_34=1;
-				//}
+				}
 			}		 
 				if(countTimeOut1 >= 5){ // 50ms ( gioi han thoi gian nhan du lieu 
 			 flag_finish_1 = 0;
@@ -1759,11 +1816,11 @@ void 					vTimerCallback4( xTimerHandle  pxTimer ){ 	// Read wiegand 34 2. 10ms
 				card_2 = 0;
 				count_2 = 0;
 				flag_finish_2 = 1;
-				//if(flag_pass==0)
-				//{
+				if(flag_pass==0)
+				{
 					flag_wiegand=1; // cho phep xu li du lieu xi tien trinh da ok
 					flag_wiegand_34=1;
-				//}
+				}
 			}		 
 				if(countTimeOut2 >= 5){ // 50ms ( gioi han thoi gian nhan du lieu 
 			 flag_finish_2 = 0;
@@ -1799,11 +1856,11 @@ void 					vTimerCallback5( xTimerHandle  pxTimer ){		// Read wiegang 26 1. 10ms
 				card_1 = 0;
 				count_1 = 0;
 				flag_finish_1 = 1;
-				//if(flag_pass==0)
-				//{
+				if(flag_pass==0)
+				{
 				flag_wiegand=1; // cho phep xu li du lieu xi tien trinh da ok
 				flag_wiegand_26=1;
-				//}
+				}
 		 }		 
 				if(countTimeOut1 >= 5){ // 50ms ( gioi han thoi gian nhan du lieu 
 			 flag_finish_1 = 0;
@@ -1838,11 +1895,11 @@ void 					vTimerCallback6( xTimerHandle  pxTimer ){		// Read wiegang 26 2. 10ms
 				count_2 = 0;
 				flag_finish_2 = 1;
 				countTimeOut2 = 0;
-				//if(flag_pass==0)
-				//{
+				if(flag_pass==0)
+				{
 				flag_wiegand=1; // cho phep xu li du lieu xi tien trinh da ok
 				flag_wiegand_26=1;
-				//}
+				}
 		 }		 
 			if(countTimeOut2 >= 5){ // 50ms ( gioi han thoi gian nhan du lieu 
 			 flag_finish_2 = 0;
@@ -1855,7 +1912,7 @@ void 					vTimerCallback6( xTimerHandle  pxTimer ){		// Read wiegang 26 2. 10ms
 void 					TM_EXTI_Handler(uint16_t GPIO_Pin) {				// Interrupt ext
 	/* Handle external line 0 interrupts */
 	if (GPIO_Pin == DTMF_BIT4_PIN) {
-		
+		express=0;
 		if(TM_GPIO_GetInputPinValue(DTMF_BIT0_PORT, DTMF_BIT0_PIN)==0){ // Q1  =0
 			if(TM_GPIO_GetInputPinValue(DTMF_BIT1_PORT, DTMF_BIT1_PIN)==0){//  Q2 =0
 				if(TM_GPIO_GetInputPinValue(DTMF_BIT2_PORT, DTMF_BIT2_PIN)==0){// Q3 =0
@@ -1911,7 +1968,8 @@ void 					TM_EXTI_Handler(uint16_t GPIO_Pin) {				// Interrupt ext
 			}
 		}
 		flag_dtmf=1;
-		sprintf(buffer_dtmf,"%c",express);
+		sprintf(buffer_dtmf,"");
+		sprintf(buffer_dtmf,"%1c",express);
 		//strcat(buffer_lcd,buffer_dtmf);
 	}
 	if (GPIO_Pin == W1_D0_PIN) { // run W1 D0
@@ -1948,10 +2006,10 @@ void 					TM_EXTI_Handler(uint16_t GPIO_Pin) {				// Interrupt ext
 	vTaskDelay(5);
 	TM_ETHERNETCLIENT_Connect("server",serveradress[0],serveradress[1],serveradress[2],serveradress[3],portadress,&requests_count);	
 	flag_passed=1;
-	turn_on_dk3();
+	if(status_sv!=2) turn_on_dk3();
 	}
-	timerdk1=(timeout*2);
-	timerdk2=(timeout*2);
+	timerdk1=(timeout_relay*2);
+	timerdk2=(timeout_relay*2);
 	flag_vip=0;
 	flag_pass=0;
 	flag_RFID1=0;
@@ -1983,8 +2041,9 @@ void 					read_sw_add(void){													// Read switch 8 bit
 			else sw_add[7] = 0;
 
 	value_dip = 1*sw_add[5]+2*sw_add[4]+4*sw_add[3]+8*sw_add[2]+16*sw_add[1]+32*sw_add[0];
-	if(sw_add[6]) timeout = 10;
-	else timeout =1;
+	//value_dip =6;
+	if(sw_add[6]) timeout_relay = 10;
+	else timeout_relay =1;
 	if(sw_add[7]) flag_config = 0;
 	 
 }
@@ -2021,7 +2080,7 @@ static int		turn_off_dk3(void){
 	TM_GPIO_SetPinHigh(RELAY_DK3_PORT,RELAY_DK3_PIN);
 	return 0;
 }
-static int 		turn_on_dk3(void){
+static int 		turn_on_dk3(void){ // nuot the
 	TM_GPIO_SetPinLow(RELAY_DK3_PORT,RELAY_DK3_PIN);
 	TM_USART_Puts(USART3,Carpull);
 	return 0;
@@ -2030,14 +2089,14 @@ static int		turn_off_dk4(void){
 	TM_GPIO_SetPinHigh(RELAY_DK4_PORT,RELAY_DK4_PIN);
 	return 0;
 }
-static int 		turn_on_dk4(void){
+static int 		turn_on_dk4(void){ // nha the
 	TM_GPIO_SetPinLow(RELAY_DK4_PORT,RELAY_DK4_PIN);
 	TM_USART_Puts(USART3,Carpush);
 	return 0;
 }
 static int 		check_vip(char * name){											// check IDcar
 	static int i =0;
-	for(i=0;i<2;i++){
+	for(i=0;i<4;i++){
 	if(strstr(name,vip_id[i]))
 		return 1;
 	}

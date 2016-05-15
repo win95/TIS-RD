@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>Ledproject/Debug</Project></CurrentConfigs></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>168</Column0><Column1>23</Column1><Column2>27</Column2><Column3>0</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>980</ColumnWidth1><ColumnWidth2>261</ColumnWidth2><ColumnWidth3>65</ColumnWidth3></Build>
+    <Find-in-Files><ColumnWidth0>403</ColumnWidth0><ColumnWidth1>67</ColumnWidth1><ColumnWidth2>604</ColumnWidth2><ColumnWidth3>268</ColumnWidth3></Find-in-Files><TerminalIO/></Static>
+    <Windows>
+      
+      
+    <Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-1194-29998</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>Ledproject</ExpandedNode><ExpandedNode>Ledproject/Lib</ExpandedNode><ExpandedNode>Ledproject/Output</ExpandedNode><ExpandedNode>Ledproject/Output/templproj.out</ExpandedNode><ExpandedNode>Ledproject/Output/templproj.out/Output</ExpandedNode><ExpandedNode>Ledproject/User</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd3>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-32102-2178</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+        <Tab><Identity>TabID-15032-6718</Identity><TabName>Find in Files</TabName><Factory>Find-in-Files</Factory><Session/></Tab></Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\user\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>251</YPos2><SelStart2>9070</SelStart2><SelEnd2>9070</SelEnd2></Tab><ActiveTab>0</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\lib\inc\stm8s_gpio.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>98</YPos2><SelStart2>4720</SelStart2><SelEnd2>4720</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\lib\src\stm8s_gpio.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>111</YPos2><SelStart2>3882</SelStart2><SelEnd2>3882</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\lib\src\stm8s_tim1.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>552</YPos2><SelStart2>24716</SelStart2><SelEnd2>24716</SelEnd2></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\lib\inc\stm8s.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd><XPos2>0</XPos2><YPos2>294</YPos2><SelStart2>39151</SelStart2><SelEnd2>39151</SelEnd2></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-0531D510><key>iaridepm.enu1</key></Toolbar-0531D510></Sizes></Row0><Row1><Sizes/></Row1></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>445</Bottom><Right>255</Right><x>-2</x><y>-2</y><xscreen>200</xscreen><yscreen>199</yscreen><sizeHorzCX>146413</sizeHorzCX><sizeHorzCY>290511</sizeHorzCY><sizeVertCX>188141</sizeVertCX><sizeVertCY>652555</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>195</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>197</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>287591</sizeHorzCY><sizeVertCX>146413</sizeVertCX><sizeVertCY>290511</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

@@ -31,7 +31,7 @@
 //#define configUSE_TIMERS  1
 //#define TM_USART1_USE_CUSTOM_IRQ
 #define TM_USART3_USE_CUSTOM_IRQ
-//#define TM_USART6_USE_CUSTOM_IRQ
+#define TM_USART6_USE_CUSTOM_IRQ
 /* Put your global defines for all libraries here used in your project */
 /*
  * 0: DP83848
@@ -102,6 +102,8 @@
 ///* define Buzzer */
 #define BUZZER_PORT						GPIOB
 #define BUZZER_PIN						GPIO_PIN_9
+//#define RELAY_DK2_PORT				GPIOB
+//#define RELAY_DK2_PIN					GPIO_PIN_9
 #endif
 /* define INPUT*/
 #ifndef W1_D0_PORT
